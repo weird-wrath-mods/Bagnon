@@ -1,47 +1,46 @@
 --[[
-	disenchantButton.lua
-		A bag disenchant button widget. Each click casts Disenchant on the
-		first non-soulbound green-quality equipable item found in the bags.
+	prospectButton.lua
+		A bag prospect button widget. Each click casts Prospecting on the
+		lowest-tier prospectable ore stack of 5+ in the bags.
 --]]
 
 local Bagnon = LibStub('AceAddon-3.0'):GetAddon('Bagnon')
-local DisenchantButton = Bagnon.Classy:New('Button')
-Bagnon.DisenchantButton = DisenchantButton
+local ProspectButton = Bagnon.Classy:New('Button')
+Bagnon.ProspectButton = ProspectButton
 
 
 local SIZE = 20
 local NORMAL_TEXTURE_SIZE = 64 * (SIZE/36)
 
-local scan_tooltip = CreateFrame('GameTooltip', 'BagnonDisenchantScanTooltip', nil, 'GameTooltipTemplate')
-scan_tooltip:SetOwner(UIParent, 'ANCHOR_NONE')
+-- itemID -> tier (lower = older / cheaper). Ordering doubles as the
+-- preference list: copper goes before saronite when both are present.
+local ORES = {
+	[2770]  = 1,  -- Copper Ore
+	[2771]  = 2,  -- Tin Ore
+	[2772]  = 3,  -- Iron Ore
+	[3858]  = 4,  -- Mithril Ore
+	[10620] = 5,  -- Thorium Ore
+	[23424] = 6,  -- Fel Iron Ore
+	[23425] = 7,  -- Adamantite Ore
+	[36909] = 8,  -- Cobalt Ore
+	[36912] = 9,  -- Saronite Ore
+	[36910] = 10, -- Titanium Ore
+}
 
-local function is_soulbound(bag, slot)
-	scan_tooltip:ClearLines()
-	scan_tooltip:SetBagItem(bag, slot)
-	for i = 1, scan_tooltip:NumLines() do
-		local line = _G['BagnonDisenchantScanTooltipTextLeft' .. i]
-		local text = line and line:GetText()
-		if text == ITEM_SOULBOUND then
-			return true
-		end
-	end
-	return false
-end
-
--- Cached spellbook scan for the Disenchant spell. Invalidated whenever the
--- spellbook changes so picking up Enchanting (or losing it) flips the gate.
+-- Cached spellbook scan for the Prospecting spell. Invalidated whenever the
+-- spellbook changes so picking up Jewelcrafting (or losing it) flips the gate.
 local cached_knows
 local known_watcher = CreateFrame('Frame')
 known_watcher:RegisterEvent('PLAYER_LOGIN')
 known_watcher:RegisterEvent('SPELLS_CHANGED')
 known_watcher:SetScript('OnEvent', function() cached_knows = nil end)
 
-local function knows_disenchant()
+local function knows_prospecting()
 	if cached_knows ~= nil then return cached_knows end
 	for tab = 1, GetNumSpellTabs() do
 		local _, _, offset, count = GetSpellTabInfo(tab)
 		for i = offset + 1, offset + count do
-			if GetSpellName(i, BOOKTYPE_SPELL) == 'Disenchant' then
+			if GetSpellName(i, BOOKTYPE_SPELL) == 'Prospecting' then
 				cached_knows = true
 				return true
 			end
@@ -51,22 +50,23 @@ local function knows_disenchant()
 	return false
 end
 
-DisenchantButton.PlayerKnows = knows_disenchant
+ProspectButton.PlayerKnows = knows_prospecting
 
--- Pick the lowest-itemLevel equipable green that isn't soulbound. Iterating
--- the whole bag lets us prefer the lowest-value item rather than just the
--- first one the scan happens to hit.
+-- Find the lowest-tier ore stack of >= 5 in the player's bags.
 local function find_target()
-	local best_bag, best_slot, best_link, best_ilvl
+	local best_bag, best_slot, best_link, best_tier
 	for bag = 0, NUM_BAG_SLOTS do
 		for slot = 1, GetContainerNumSlots(bag) do
 			local link = GetContainerItemLink(bag, slot)
 			if link then
-				local _, _, quality, ilvl, _, _, _, _, equipLoc = GetItemInfo(link)
-				if quality == 2 and equipLoc and equipLoc ~= ''
-				   and not is_soulbound(bag, slot) then
-					if not best_ilvl or (ilvl and ilvl < best_ilvl) then
-						best_bag, best_slot, best_link, best_ilvl = bag, slot, link, ilvl
+				local id = tonumber(string.match(link, 'item:(%d+)'))
+				local tier = id and ORES[id]
+				if tier then
+					local _, count = GetContainerItemInfo(bag, slot)
+					if count and count >= 5 then
+						if not best_tier or tier < best_tier then
+							best_bag, best_slot, best_link, best_tier = bag, slot, link, tier
+						end
 					end
 				end
 			end
@@ -78,8 +78,8 @@ end
 
 --[[ Constructor ]]--
 
-function DisenchantButton:New(frameID, parent)
-	local b = self:Bind(CreateFrame('Button', 'BagnonDisenchantButton' .. frameID, parent, 'SecureActionButtonTemplate'))
+function ProspectButton:New(frameID, parent)
+	local b = self:Bind(CreateFrame('Button', 'BagnonProspectButton' .. frameID, parent, 'SecureActionButtonTemplate'))
 	b:SetWidth(SIZE)
 	b:SetHeight(SIZE)
 	b:RegisterForClicks('AnyUp')
@@ -105,7 +105,7 @@ function DisenchantButton:New(frameID, parent)
 
 	local icon = b:CreateTexture(nil, 'ARTWORK')
 	icon:SetAllPoints(b)
-	icon:SetTexture([[Interface\Icons\INV_Enchant_Disenchant]])
+	icon:SetTexture([[Interface\Icons\INV_Misc_Gem_BloodGem_01]])
 
 	b:SetScript('PreClick', b.PreClick)
 	b:SetScript('OnEnter', b.OnEnter)
@@ -122,49 +122,47 @@ end
 
 --[[ Frame Events ]]--
 
--- Recompute the macro just before the secure click fires so we always target
--- a still-present, still-eligible item.
-function DisenchantButton:PreClick()
+function ProspectButton:PreClick()
 	if InCombatLockdown() then
 		self:SetAttribute('macrotext', '')
 		return
 	end
 	local bag, slot = find_target()
 	if bag then
-		self:SetAttribute('macrotext', '/cast Disenchant\n/use ' .. bag .. ' ' .. slot)
+		self:SetAttribute('macrotext', '/cast Prospecting\n/use ' .. bag .. ' ' .. slot)
 	else
 		self:SetAttribute('macrotext', '')
 	end
 end
 
-function DisenchantButton:OnEnter()
+function ProspectButton:OnEnter()
 	if self:GetRight() > (GetScreenWidth() / 2) then
 		GameTooltip:SetOwner(self, 'ANCHOR_LEFT')
 	else
 		GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
 	end
-	GameTooltip:SetText('Disenchant')
-	GameTooltip:AddLine('Disenchants the first non-soulbound green item in your bags.', 1, 1, 1, true)
+	GameTooltip:SetText('Prospecting')
+	GameTooltip:AddLine('Prospects the lowest-tier ore stack (5+) in your bags.', 1, 1, 1, true)
 	local bag, slot, link = find_target()
 	if link then
 		GameTooltip:AddLine('Next: ' .. link, 0.6, 0.8, 1, true)
 	else
-		GameTooltip:AddLine('No eligible items found.', 1, 0.4, 0.4, true)
+		GameTooltip:AddLine('No eligible ore stacks found.', 1, 0.4, 0.4, true)
 	end
 	GameTooltip:Show()
 end
 
-function DisenchantButton:OnLeave()
+function ProspectButton:OnLeave()
 	if GameTooltip:IsOwned(self) then GameTooltip:Hide() end
 end
 
 
 --[[ Properties ]]--
 
-function DisenchantButton:SetFrameID(frameID)
+function ProspectButton:SetFrameID(frameID)
 	self.frameID = frameID
 end
 
-function DisenchantButton:GetFrameID()
+function ProspectButton:GetFrameID()
 	return self.frameID
 end

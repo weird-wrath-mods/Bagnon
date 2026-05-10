@@ -444,6 +444,9 @@ function Frame:Layout()
 	local w, h = self:PlaceDisenchantButton()
 	width = width + w
 
+	local w, h = self:PlaceProspectButton()
+	width = width + w
+
 	local w, h = self:PlaceTitleFrame()
 	width = width + w
 
@@ -582,7 +585,9 @@ function Frame:PlaceSearchFrame()
 		frame:SetPoint('TOPLEFT', self, 'TOPLEFT', 8, -8)
 	end
 
-	if self:HasDisenchantButton() then
+	if self:HasProspectButton() then
+		frame:SetPoint('RIGHT', self:GetProspectButton(), 'LEFT', -2, 0)
+	elseif self:HasDisenchantButton() then
 		frame:SetPoint('RIGHT', self:GetDisenchantButton(), 'LEFT', -2, 0)
 	elseif self:HasSortToggle() then
 		frame:SetPoint('RIGHT', self:GetSortToggle(), 'LEFT', -2, 0)
@@ -712,7 +717,9 @@ function Frame:PlaceTitleFrame()
 		h = 20
 	end
 
-	if self:HasDisenchantButton() then
+	if self:HasProspectButton() then
+		frame:SetPoint('RIGHT', self:GetProspectButton(), 'LEFT', -4, 0)
+	elseif self:HasDisenchantButton() then
 		frame:SetPoint('RIGHT', self:GetDisenchantButton(), 'LEFT', -4, 0)
 	elseif self:HasSortToggle() then
 		frame:SetPoint('RIGHT', self:GetSortToggle(), 'LEFT', -4, 0)
@@ -954,6 +961,46 @@ function Frame:PlaceDisenchantButton()
 	end
 
 	local b = self:GetDisenchantButton()
+	if b then b:Hide() end
+	return 0, 0
+end
+
+
+--[[ prospect button ]]--
+
+function Frame:GetProspectButton()
+	return self.prospectButton
+end
+
+function Frame:CreateProspectButton()
+	local b = Bagnon.ProspectButton:New(self:GetFrameID(), self)
+	self.prospectButton = b
+	return b
+end
+
+function Frame:HasProspectButton()
+	if self:GetFrameID() ~= 'inventory' then return false end
+	return Bagnon.ProspectButton and Bagnon.ProspectButton.PlayerKnows()
+end
+
+function Frame:PlaceProspectButton()
+	if self:HasProspectButton() then
+		local b = self:GetProspectButton() or self:CreateProspectButton()
+		b:ClearAllPoints()
+		if self:HasDisenchantButton() then
+			b:SetPoint('RIGHT', self:GetDisenchantButton(), 'LEFT', -4, 0)
+		elseif self:HasSortToggle() then
+			b:SetPoint('RIGHT', self:GetSortToggle(), 'LEFT', -4, 0)
+		elseif self:HasOptionsToggle() then
+			b:SetPoint('RIGHT', self:GetOptionsToggle(), 'LEFT', -4, 0)
+		else
+			b:SetPoint('RIGHT', self:GetCloseButton(), 'LEFT', -4, 0)
+		end
+		b:Show()
+		return b:GetWidth() + 4, b:GetHeight()
+	end
+
+	local b = self:GetProspectButton()
 	if b then b:Hide() end
 	return 0, 0
 end
