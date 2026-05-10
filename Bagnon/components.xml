@@ -10,6 +10,7 @@
 	<Script file="components\moneyFrame.lua"/>
 	<Script file="components\optionsToggle.lua"/>
 	<Script file="components\sortToggle.lua"/>
+	<Script file="components\disenchantButton.lua"/>
 	<Script file="components\playerSelector.lua"/>
 	<Script file="components\savedSettings.lua"/>
 	<Script file="components\searchFrame.lua"/>
