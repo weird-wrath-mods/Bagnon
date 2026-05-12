@@ -37,8 +37,6 @@ end
 
 local ITEM_TYPES = {GetAuctionItemClasses()}
 
-local PRECIOUS = set(49638, 40768)
-
 
 local MOUNTS = set(
 	5864, 5872, 5873, 18785, 18786, 18787, 18244, 19030, 13328, 13329,
@@ -275,7 +273,7 @@ local function Item(container, position)
 		local sortKey = {}
 		if itemID == 6948 then
 			tinsert(sortKey, 1)
-		elseif PRECIOUS[itemID] then
+		elseif subType == 'Devices' then
 			tinsert(sortKey, 2)
 		elseif MOUNTS[itemID] then
 			tinsert(sortKey, 3)
@@ -285,28 +283,34 @@ local function Item(container, position)
 			tinsert(sortKey, 5)
 		elseif TOOLS[itemID] then
 			tinsert(sortKey, 6)
-		elseif itemID == 6265 then
-			tinsert(sortKey, 14)
-		elseif conjured then
-			tinsert(sortKey, 15)
-		elseif soulbound then
-			tinsert(sortKey, 6)
-		elseif itype == ITEM_TYPES[9] then
+		elseif quality == 7 then
 			tinsert(sortKey, 7)
-		elseif quest then
-			tinsert(sortKey, 9)
-		elseif usable and itype ~= ITEM_TYPES[1] and itype ~= ITEM_TYPES[2] and itype ~= ITEM_TYPES[8] or itype == ITEM_TYPES[4] then
+		elseif itemID == 6265 then
+			tinsert(sortKey, 17)
+		elseif conjured then
+			tinsert(sortKey, 19)
+		elseif soulbound then
 			tinsert(sortKey, 8)
+		elseif itype == ITEM_TYPES[9] then
+			tinsert(sortKey, 9)
+		elseif quest then
+			tinsert(sortKey, 10)
+		elseif subType == 'Food & Drink' then
+			tinsert(sortKey, 18)
+		elseif itype == ITEM_TYPES[4] then
+			tinsert(sortKey, 16)
+		elseif usable and itype ~= ITEM_TYPES[1] and itype ~= ITEM_TYPES[2] and itype ~= ITEM_TYPES[8] then
+			tinsert(sortKey, 15)
 		elseif ENCHANTING_MATERIALS[itemID] then
 			tinsert(sortKey, 11)
 		elseif HERBS[itemID] then
 			tinsert(sortKey, 12)
 		elseif quality and quality > 1 then
-			tinsert(sortKey, 10)
-		elseif quality == 1 then
 			tinsert(sortKey, 13)
-		elseif quality == 0 then
+		elseif quality == 1 then
 			tinsert(sortKey, 14)
+		elseif quality == 0 then
+			tinsert(sortKey, 17)
 		end
 
 		tinsert(sortKey, ItemTypeKey(itype))
