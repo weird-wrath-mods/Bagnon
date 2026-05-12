@@ -37,6 +37,9 @@ end
 
 local ITEM_TYPES = {GetAuctionItemClasses()}
 
+local PRECIOUS = set(49638, 40768)
+
+
 local MOUNTS = set(
 	5864, 5872, 5873, 18785, 18786, 18787, 18244, 19030, 13328, 13329,
 	2411, 2414, 5655, 5656, 18778, 18776, 18777, 18241, 12353, 12354,
@@ -272,14 +275,16 @@ local function Item(container, position)
 		local sortKey = {}
 		if itemID == 6948 then
 			tinsert(sortKey, 1)
-		elseif MOUNTS[itemID] then
+		elseif PRECIOUS[itemID] then
 			tinsert(sortKey, 2)
-		elseif SPECIAL[itemID] then
+		elseif MOUNTS[itemID] then
 			tinsert(sortKey, 3)
-		elseif KEYS[itemID] then
+		elseif SPECIAL[itemID] then
 			tinsert(sortKey, 4)
-		elseif TOOLS[itemID] then
+		elseif KEYS[itemID] then
 			tinsert(sortKey, 5)
+		elseif TOOLS[itemID] then
+			tinsert(sortKey, 6)
 		elseif itemID == 6265 then
 			tinsert(sortKey, 14)
 		elseif conjured then
