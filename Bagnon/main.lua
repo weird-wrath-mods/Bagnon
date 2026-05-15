@@ -42,10 +42,11 @@ function Bagnon:CreateOptionsLoader()
 end
 
 function Bagnon:CreateGuildBankLoader()
-	local name, title, notes, enabled, loadable = GetAddOnInfo('Bagnon_GuildBank')
+	if not self.Settings:IsFrameEnabled('guildbank') then return end
+	local _, _, _, enabled, loadable = GetAddOnInfo('Bagnon_GuildBank')
 	if enabled and loadable then
 		GuildBankFrame_LoadUI = function()
-			LoadAddOn('Bagnon_GuildBank') 
+			LoadAddOn('Bagnon_GuildBank')
 		end
 	end
 end

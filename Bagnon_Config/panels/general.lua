@@ -88,9 +88,12 @@ function GeneralOptions:AddWidgets()
 	
 	local enableKeyring = self:CreateEnableFrameCheckbox('keys')
 	enableKeyring:SetPoint('TOPLEFT', enableBank, 'BOTTOMLEFT', 0, -SPACING)
-	
+
+	local enableGuildBank = self:CreateEnableFrameCheckbox('guildbank')
+	enableGuildBank:SetPoint('TOPLEFT', enableKeyring, 'BOTTOMLEFT', 0, -SPACING)
+
 	local lockFramePositions = self:CreateLockFramePositionsCheckbox()
-	lockFramePositions:SetPoint('TOPLEFT', enableKeyring, 'BOTTOMLEFT', 0, -SPACING)
+	lockFramePositions:SetPoint('TOPLEFT', enableGuildBank, 'BOTTOMLEFT', 0, -SPACING)
 	
 	local showEmptyItemSlotTextures = self:CreateEmptyItemSlotTextureCheckbox()
 	showEmptyItemSlotTextures:SetPoint('TOPLEFT', lockFramePositions, 'BOTTOMLEFT', 0, -SPACING)
@@ -107,6 +110,7 @@ function GeneralOptions:UpdateWidgets()
 	self:GetEnableFrameCheckbox('inventory'):UpdateChecked()
 	self:GetEnableFrameCheckbox('bank'):UpdateChecked()
 	self:GetEnableFrameCheckbox('keyring'):UpdateChecked()
+	self:GetEnableFrameCheckbox('guildbank'):UpdateChecked()
 
 	self:GetEmptyItemSlotTextureCheckbox():UpdateChecked()
 	self:GetHighlightItemsByQualityCheckbox():UpdateChecked()

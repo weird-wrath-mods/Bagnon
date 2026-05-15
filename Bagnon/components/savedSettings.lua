@@ -70,11 +70,12 @@ function SavedSettings:GetDefaultSettings()
 		colorBagSlots = true,
 		
 		enableBlizzardBagPassThrough = false,
-		
+
 		enabledFrames = {
 			inventory = true,
 			bank = true,
 			keys = true,
+			guildbank = false,
 		},
 		
 		autoDisplayEvents = {
