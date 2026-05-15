@@ -275,14 +275,6 @@ function SavedFrameSettings:HasMoneyFrame()
 	return self:GetDB().hasMoneyFrame
 end
 
-function SavedFrameSettings:SetHasDBOFrame(enable)
-	self:GetDB().hasDBOFrame = enable or false
-end
-
-function SavedFrameSettings:HasDBOFrame()
-	return self:GetDB().hasDBOFrame
-end
-
 function SavedFrameSettings:SetHasSearchToggle(enable)
 	self:GetDB().hasSearchToggle = enable or false
 end
@@ -368,17 +360,6 @@ function SavedFrameSettings:IsSlotOrderReversed()
 end
 
 
---[[ Databroker Display Object ]]--
-
-function SavedFrameSettings:SetBrokerDisplayObject(objectName)
-	self:GetDB().dataBrokerObject = objectName
-end
-
-function SavedFrameSettings:GetBrokerDisplayObject()
-	return self:GetDB().dataBrokerObject
-end
-
-
 --[[---------------------------------------------------------------------------
 	Frame Defaults
 --]]---------------------------------------------------------------------------
@@ -431,14 +412,10 @@ function SavedFrameSettings:GetDefaultInventorySettings()
 		--optional components
 		hasMoneyFrame = true,
 		hasBagFrame = true,
-		hasDBOFrame = true,
 		hasSearchToggle = true,
 		hasOptionsToggle = true,
 		hasKeyringToggle = true,
 
-		--dbo display object
-		dataBrokerObject = 'BagnonLauncher',
-		
 		--slot ordering
 		reverseSlotOrder = false,
 	}
@@ -481,14 +458,10 @@ function SavedFrameSettings:GetDefaultBankSettings()
 		--optional components
 		hasMoneyFrame = true,
 		hasBagFrame = true,
-		hasDBOFrame = true,
 		hasSearchToggle = true,
 		hasOptionsToggle = true,
 		hasKeyringToggle = false,
 
-		--dbo display object
-		dataBrokerObject = 'BagnonLauncher',
-		
 		--slot ordering
 		reverseSlotOrder = false,
 	}
@@ -523,14 +496,10 @@ function SavedFrameSettings:GetDefaultKeyRingSettings()
 		--optional components
 		hasMoneyFrame = false,
 		hasBagFrame = false,
-		hasDBOFrame = false,
 		hasSearchToggle = false,
 		hasOptionsToggle = true,
 		hasKeyringToggle = false,
 
-		--dbo display object
-		dataBrokerObject = 'BagnonLauncher',
-		
 		--slot ordering
 		reverseSlotOrder = false,
 	}

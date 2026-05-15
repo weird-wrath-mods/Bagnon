@@ -222,20 +222,6 @@ function FrameSettings:HasMoneyFrame()
 	return self:GetDB():HasMoneyFrame()
 end
 
---returns true if the frame has a databroker object frame, and false otherwise
-function FrameSettings:SetHasDBOFrame(enable)
-	local enable = enable and true or false
-
-	if self:HasDBOFrame() ~= enable then
-		self:GetDB():SetHasDBOFrame(enable)
-		self:SendMessage('DATABROKER_FRAME_ENABLE_UPDATE', self:HasDBOFrame())
-	end
-end
-
-function FrameSettings:HasDBOFrame()
-	return self:GetDB():HasDBOFrame()
-end
-
 --returns true if the search frame TOGGLE is shown, and false otherwise
 function FrameSettings:SetHasSearchToggle(enable)
 	local enable = enable and true or false
@@ -262,20 +248,6 @@ end
 
 function FrameSettings:HasOptionsToggle()
 	return self:GetDB():HasOptionsToggle()
-end
-
-
---[[ Broker Display Object ]]--
-
-function FrameSettings:SetBrokerDisplayObject(objectName)
-	if self:GetBrokerDisplayObject() ~= objectName then
-		self:GetDB():SetBrokerDisplayObject(objectName)
-		self:SendMessage('DATABROKER_OBJECT_UPDATE', self:GetBrokerDisplayObject())
-	end
-end
-
-function FrameSettings:GetBrokerDisplayObject()
-	return self:GetDB():GetBrokerDisplayObject()
 end
 
 

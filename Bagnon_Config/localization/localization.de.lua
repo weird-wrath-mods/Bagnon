@@ -25,7 +25,6 @@ L.ColorItemSlotsByBagType = 'Leere Gegenstandslots nach der Taschen-Art einf\195
 L.FrameLayer = 'Layer'
 L.EnableBagFrame = 'Taschen-Anzeige aktivieren'
 L.EnableMoneyFrame = 'Gold-Anzeige aktivieren'
-L.EnableDBOFrame = 'Databroker-Anzeige aktivieren'
 L.EnableSearchToggle = 'Suchfeld aktivieren'
 L.EnableOptionsToggle = 'Schalter f\195\188r die Optionen aktivieren'
 L.EnableFrame_inventory = 'Inventar aktivieren'

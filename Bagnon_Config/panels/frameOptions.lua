@@ -50,7 +50,6 @@ function FrameOptions:UpdateMessages()
 
 	self:RegisterMessage('BAG_FRAME_ENABLE_UPDATE')
 	self:RegisterMessage('MONEY_FRAME_ENABLE_UPDATE')
-	self:RegisterMessage('DATABROKER_FRAME_ENABLE_UPDATE')
 	self:RegisterMessage('SEARCH_TOGGLE_ENABLE_UPDATE')
 	self:RegisterMessage('SLOT_ORDER_UPDATE')
 	self:RegisterMessage('OPTIONS_TOGGLE_ENABLE_UPDATE')
@@ -107,12 +106,6 @@ end
 function FrameOptions:MONEY_FRAME_ENABLE_UPDATE(msg, frameID, enable)
 	if self:GetFrameID() == frameID then
 		self:GetToggleMoneyFrameCheckbox():UpdateChecked()
-	end
-end
-
-function FrameOptions:DATABROKER_FRAME_ENABLE_UPDATE(msg, frameID, enable)
-	if self:GetFrameID() == frameID then
-		self:GetToggleDBOFrameCheckbox():UpdateChecked()
 	end
 end
 
@@ -175,11 +168,8 @@ function FrameOptions:AddWidgets()
 	local toggleMoneyFrame = self:CreateToggleMoneyFrameCheckbox()
 	toggleMoneyFrame:SetPoint('TOPLEFT', toggleBagFrame, 'BOTTOMLEFT', 0, -CHECK_BUTTON_SPACING)
 
-	local toggleDBOFrame = self:CreateToggleDBOFrameCheckbox()
-	toggleDBOFrame:SetPoint('TOPLEFT', toggleMoneyFrame, 'BOTTOMLEFT', 0, -CHECK_BUTTON_SPACING)
-
 	local toggleSearchFrame = self:CreateToggleSearchFrameCheckbox()
-	toggleSearchFrame:SetPoint('TOPLEFT', toggleDBOFrame, 'BOTTOMLEFT', 0, -CHECK_BUTTON_SPACING)
+	toggleSearchFrame:SetPoint('TOPLEFT', toggleMoneyFrame, 'BOTTOMLEFT', 0, -CHECK_BUTTON_SPACING)
 	
 	local toggleOptionsFrame = self:CreateToggleOptionsCheckbox()
 	toggleOptionsFrame:SetPoint('TOPLEFT', toggleSearchFrame, 'BOTTOMLEFT', 0, -CHECK_BUTTON_SPACING)
@@ -247,7 +237,6 @@ function FrameOptions:UpdateWidgets()
 	self:GetToggleBagFrameCheckbox():SetDisabled(self:GetFrameID() == 'keys' or self:GetFrameID() == 'guildbank')
 
 	self:GetToggleMoneyFrameCheckbox():UpdateChecked()
-	self:GetToggleDBOFrameCheckbox():UpdateChecked()
 	self:GetToggleSearchFrameCheckbox():UpdateChecked()
 	self:GetToggleOptionsCheckbox():UpdateChecked()
 	
@@ -501,27 +490,6 @@ end
 
 function FrameOptions:GetToggleMoneyFrameCheckbox()
 	return self.toggleMoneyFrameCheckbox
-end
-
-
---databroker frame
-function FrameOptions:CreateToggleDBOFrameCheckbox()
-	local button = Bagnon.OptionsCheckButton:New(L.EnableDBOFrame, self)
-
-	button.OnEnableSetting = function(self, enable)
-		self:GetParent():GetSettings():SetHasDBOFrame(enable)
-	end
-
-	button.IsSettingEnabled = function(self, enable)
-		return self:GetParent():GetSettings():HasDBOFrame()
-	end
-
-	self.toggleDBOFrameCheckbox = button
-	return button
-end
-
-function FrameOptions:GetToggleDBOFrameCheckbox()
-	return self.toggleDBOFrameCheckbox
 end
 
 

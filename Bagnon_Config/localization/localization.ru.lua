@@ -26,7 +26,6 @@ L.ColorItemSlotsByBagType = 'Цвет пустых ячеек по типу су
 L.FrameLayer = 'Слой окна'
 L.EnableBagFrame = 'Показывать кнопку сумок'
 L.EnableMoneyFrame = 'Показывать область денег'
-L.EnableDBOFrame = 'Показывать область databroker'
 L.EnableSearchToggle = 'Показывать кнопку поиска'
 L.EnableOptionsToggle = 'Показывать кнопку настроек'
 L.EnableFrame_inventory = 'Включить область инвентаря'

@@ -66,7 +66,6 @@ function Frame:UpdateEvents()
 
 		self:RegisterMessage('BAG_FRAME_ENABLE_UPDATE')
 		self:RegisterMessage('MONEY_FRAME_ENABLE_UPDATE')
-		self:RegisterMessage('DATABROKER_FRAME_ENABLE_UPDATE')
 		self:RegisterMessage('SEARCH_TOGGLE_ENABLE_UPDATE')
 		self:RegisterMessage('OPTIONS_TOGGLE_ENABLE_UPDATE')
 	end
@@ -158,12 +157,6 @@ function Frame:BAG_FRAME_ENABLE_UPDATE(msg, frameID, enable)
 end
 
 function Frame:MONEY_FRAME_ENABLE_UPDATE(msg, frameID, enable)
-	if self:GetFrameID() == frameID then
-		self:Layout()
-	end
-end
-
-function Frame:DATABROKER_FRAME_ENABLE_UPDATE(msg, frameID, enable)
 	if self:GetFrameID() == frameID then
 		self:Layout()
 	end
@@ -466,10 +459,7 @@ function Frame:Layout()
 	width = math.max(w, width)
 	height = height + h
 
-	local w, h = self:PlaceBrokerDisplayFrame()
-	if not self:HasMoneyFrame() then
-		height = height + h
-	end
+	self:PlaceTokenFrame()
 
 	--adjust size
 	self:SetWidth(math.max(width, 156) + padW)
@@ -817,43 +807,29 @@ end
 
 
 
---[[ libdatabroker display ]]--
+--[[ token frame ]]--
 
-function Frame:GetBrokerDisplay()
-	return self.brokerDisplay
+function Frame:GetTokenFrame()
+	return self.tokenFrame
 end
 
-function Frame:CreateBrokerDisplay()
-	local f = Bagnon.BrokerDisplay:New(1, self:GetFrameID(), self)
-	self.brokerDisplay = f
+function Frame:CreateTokenFrame()
+	local f = Bagnon.TokenFrame:New(self:GetFrameID(), self)
+	self.tokenFrame = f
 	return f
 end
 
-function Frame:HasBrokerDisplay()
-	return self:GetSettings():HasDBOFrame()
-end
+function Frame:PlaceTokenFrame()
+	local frame = self:GetTokenFrame() or self:CreateTokenFrame()
+	frame:ClearAllPoints()
 
-function Frame:PlaceBrokerDisplayFrame()
-	if self:HasBrokerDisplay() then
-		local frame = self:GetBrokerDisplay() or self:CreateBrokerDisplay()
-		frame:ClearAllPoints()
-		frame:SetPoint('BOTTOMLEFT', self, 'BOTTOMLEFT', 8, 10)
-
-		if self:HasMoneyFrame() then
-			frame:SetPoint('BOTTOMRIGHT', self, 'BOTTOMRIGHT', -(self:GetMoneyFrame():GetWidth() + 4), 10)
-		else
-			frame:SetPoint('BOTTOMRIGHT', self, 'BOTTOMRIGHT', -8, 10)
-		end
-
-		frame:Show()
-		return frame:GetWidth(), 24
+	if self:HasMoneyFrame() then
+		frame:SetPoint('RIGHT', self:GetMoneyFrame(), 'LEFT', -4, 0)
+	else
+		frame:SetPoint('BOTTOMRIGHT', self, 'BOTTOMRIGHT', -8, 10)
 	end
-
-	local frame = self:GetBrokerDisplay()
-	if frame then
-		frame:Hide()
-	end
-	return 0, 0
+	frame:Show()
+	frame:UpdateTokens()
 end
 
 
