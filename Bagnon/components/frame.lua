@@ -34,10 +34,25 @@ function Frame:New(frameID)
 	f.frameID = frameID
 	f:Rescale()
 	f:UpdateEverything()
+	f:EnsureSecureButtons()
 
 	table.insert(UISpecialFrames, f:GetName())
 
 	return f
+end
+
+-- Pre-build the disenchant/prospect SecureActionButtonTemplate frames.
+-- CreateFrame with a secure template is protected, so doing it lazily on
+-- first open fails when that first open happens during combat.
+function Frame:EnsureSecureButtons()
+	if self:GetFrameID() ~= 'inventory' then return end
+	if InCombatLockdown() then return end
+	if not self.disenchantButton and Bagnon.DisenchantButton and Bagnon.DisenchantButton.PlayerKnows() then
+		self:CreateDisenchantButton()
+	end
+	if not self.prospectButton and Bagnon.ProspectButton and Bagnon.ProspectButton.PlayerKnows() then
+		self:CreateProspectButton()
+	end
 end
 
 
@@ -86,19 +101,30 @@ end
 function Frame:FRAME_MOVE_START(msg, frameID)
 	if self:GetFrameID() == frameID then
 		self:StartMoving()
+		-- Buttons are UIParent-anchored at absolute coords, so they don't
+		-- follow during drag. Re-position every frame while moving.
+		self:SetScript('OnUpdate', function(self)
+			self:PlaceDisenchantButton()
+			self:PlaceProspectButton()
+		end)
 	end
 end
 
 function Frame:FRAME_MOVE_STOP(msg, frameID)
 	if self:GetFrameID() == frameID then
 		self:StopMovingOrSizing()
+		self:SetScript('OnUpdate', nil)
 		self:SavePosition()
+		self:PlaceDisenchantButton()
+		self:PlaceProspectButton()
 	end
 end
 
 function Frame:FRAME_POSITION_UPDATE(msg, frameID)
 	if self:GetFrameID() == frameID then
 		self:UpdatePosition()
+		self:PlaceDisenchantButton()
+		self:PlaceProspectButton()
 	end
 end
 
@@ -199,6 +225,11 @@ function Frame:OnHide()
 	if self:IsFrameShown() then
 		self:HideFrame()
 	end
+
+	-- Secure buttons are anchored to UIParent (to avoid linking the bag frame
+	-- into a protected chain), so bag close no longer cascades to them.
+	if self.prospectButton then self.prospectButton:Hide() end
+	if self.disenchantButton then self.disenchantButton:Hide() end
 end
 
 function Frame:CloseBankFrame()
@@ -921,17 +952,31 @@ function Frame:HasDisenchantButton()
 	return Bagnon.DisenchantButton and Bagnon.DisenchantButton.PlayerKnows()
 end
 
+-- Position the secure button by computing absolute coordinates relative to
+-- the bag frame, anchored to UIParent. SetPoint'ing a secure frame to any
+-- descendant of the bag frame makes the bag inherit the button's protected
+-- status, which blocks Show() in combat. Anchoring to UIParent breaks that
+-- link. Re-runs on every Layout, and we re-Layout on FRAME_POSITION_UPDATE.
+local function placeAtBagRight(b, bagFrame, slotIndex)
+	local right = bagFrame:GetRight()
+	local top = bagFrame:GetTop()
+	if not (right and top) then return end
+	-- Close button is TOPRIGHT(-2, -2), 20x20 — its center sits at
+	-- (right - 12, top - 12). Each subsequent button is 24 to the left
+	-- (20 wide + 4 gap). slotIndex 0 is the first button left of close.
+	local x = right - 36 - (27 * slotIndex)
+	local y = top - 18
+	b:ClearAllPoints()
+	b:SetPoint('CENTER', UIParent, 'BOTTOMLEFT', x, y)
+end
+
 function Frame:PlaceDisenchantButton()
 	if self:HasDisenchantButton() then
 		local b = self:GetDisenchantButton() or self:CreateDisenchantButton()
-		b:ClearAllPoints()
-		if self:HasSortToggle() then
-			b:SetPoint('RIGHT', self:GetSortToggle(), 'LEFT', -4, 0)
-		elseif self:HasOptionsToggle() then
-			b:SetPoint('RIGHT', self:GetOptionsToggle(), 'LEFT', -4, 0)
-		else
-			b:SetPoint('RIGHT', self:GetCloseButton(), 'LEFT', -4, 0)
-		end
+		local slot = 0
+		if self:HasSortToggle() then slot = slot + 1 end
+		if self:HasOptionsToggle() then slot = slot + 1 end
+		placeAtBagRight(b, self, slot)
 		b:Show()
 		return b:GetWidth() + 4, b:GetHeight()
 	end
@@ -962,16 +1007,11 @@ end
 function Frame:PlaceProspectButton()
 	if self:HasProspectButton() then
 		local b = self:GetProspectButton() or self:CreateProspectButton()
-		b:ClearAllPoints()
-		if self:HasDisenchantButton() then
-			b:SetPoint('RIGHT', self:GetDisenchantButton(), 'LEFT', -4, 0)
-		elseif self:HasSortToggle() then
-			b:SetPoint('RIGHT', self:GetSortToggle(), 'LEFT', -4, 0)
-		elseif self:HasOptionsToggle() then
-			b:SetPoint('RIGHT', self:GetOptionsToggle(), 'LEFT', -4, 0)
-		else
-			b:SetPoint('RIGHT', self:GetCloseButton(), 'LEFT', -4, 0)
-		end
+		local slot = 0
+		if self:HasSortToggle() then slot = slot + 1 end
+		if self:HasOptionsToggle() then slot = slot + 1 end
+		if self:HasDisenchantButton() then slot = slot + 1 end
+		placeAtBagRight(b, self, slot)
 		b:Show()
 		return b:GetWidth() + 4, b:GetHeight()
 	end

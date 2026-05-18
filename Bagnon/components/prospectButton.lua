@@ -79,7 +79,12 @@ end
 --[[ Constructor ]]--
 
 function ProspectButton:New(frameID, parent)
-	local b = self:Bind(CreateFrame('Button', 'BagnonProspectButton' .. frameID, parent, 'SecureActionButtonTemplate'))
+	-- Parent to UIParent (not the bag frame) so this secure-template button
+	-- doesn't taint the bag frame's IsProtected, which would block Show() in
+	-- combat. Positioning is handled via cross-parent SetPoint in Frame:Place*.
+	local b = self:Bind(CreateFrame('Button', 'BagnonProspectButton' .. frameID, UIParent, 'SecureActionButtonTemplate'))
+	b:SetFrameStrata('DIALOG')
+	b:Hide()
 	b:SetWidth(SIZE)
 	b:SetHeight(SIZE)
 	b:RegisterForClicks('AnyUp')

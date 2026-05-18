@@ -79,7 +79,10 @@ end
 --[[ Constructor ]]--
 
 function DisenchantButton:New(frameID, parent)
-	local b = self:Bind(CreateFrame('Button', 'BagnonDisenchantButton' .. frameID, parent, 'SecureActionButtonTemplate'))
+	-- See ProspectButton:New for why this is parented to UIParent.
+	local b = self:Bind(CreateFrame('Button', 'BagnonDisenchantButton' .. frameID, UIParent, 'SecureActionButtonTemplate'))
+	b:SetFrameStrata('DIALOG')
+	b:Hide()
 	b:SetWidth(SIZE)
 	b:SetHeight(SIZE)
 	b:RegisterForClicks('AnyUp')

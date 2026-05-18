@@ -30,6 +30,30 @@ function Bagnon:OnInitialize()
 	self:CreateOptionsLoader()
 	self:CreateLDBLauncher()
 	self:CreateGuildBankLoader()
+
+	self:RegisterEvent('PLAYER_LOGIN')
+	self:RegisterEvent('PLAYER_REGEN_ENABLED')
+end
+
+-- Pre-construct the inventory frame so its secure profession buttons exist
+-- before the player ever opens bags in combat.
+function Bagnon:PLAYER_LOGIN()
+	if self:IsFrameEnabled('inventory') and not self:GetFrame('inventory') then
+		self:CreateFrame('inventory')
+	end
+end
+
+-- If login or reload happened in combat, EnsureSecureButtons was skipped.
+-- Also catches up button visibility: if the bag was closed mid-combat, we
+-- couldn't Hide() the protected buttons then.
+function Bagnon:PLAYER_REGEN_ENABLED()
+	local f = self:GetFrame('inventory')
+	if not f then return end
+	f:EnsureSecureButtons()
+	if not f:IsShown() then
+		if f.prospectButton then f.prospectButton:Hide() end
+		if f.disenchantButton then f.disenchantButton:Hide() end
+	end
 end
 
 --create a loader for the options menu
