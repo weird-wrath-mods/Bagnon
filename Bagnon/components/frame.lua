@@ -41,7 +41,7 @@ function Frame:New(frameID)
 	return f
 end
 
--- Pre-build the disenchant/prospect SecureActionButtonTemplate frames.
+-- Pre-build the disenchant/prospect/milling SecureActionButtonTemplate frames.
 -- CreateFrame with a secure template is protected, so doing it lazily on
 -- first open fails when that first open happens during combat.
 function Frame:EnsureSecureButtons()
@@ -52,6 +52,9 @@ function Frame:EnsureSecureButtons()
 	end
 	if not self.prospectButton and Bagnon.ProspectButton and Bagnon.ProspectButton.PlayerKnows() then
 		self:CreateProspectButton()
+	end
+	if not self.millingButton and Bagnon.MillingButton and Bagnon.MillingButton.PlayerKnows() then
+		self:CreateMillingButton()
 	end
 end
 
@@ -106,6 +109,7 @@ function Frame:FRAME_MOVE_START(msg, frameID)
 		self:SetScript('OnUpdate', function(self)
 			self:PlaceDisenchantButton()
 			self:PlaceProspectButton()
+			self:PlaceMillingButton()
 		end)
 	end
 end
@@ -117,6 +121,7 @@ function Frame:FRAME_MOVE_STOP(msg, frameID)
 		self:SavePosition()
 		self:PlaceDisenchantButton()
 		self:PlaceProspectButton()
+		self:PlaceMillingButton()
 	end
 end
 
@@ -125,6 +130,7 @@ function Frame:FRAME_POSITION_UPDATE(msg, frameID)
 		self:UpdatePosition()
 		self:PlaceDisenchantButton()
 		self:PlaceProspectButton()
+		self:PlaceMillingButton()
 	end
 end
 
@@ -230,6 +236,7 @@ function Frame:OnHide()
 	-- into a protected chain), so bag close no longer cascades to them.
 	if self.prospectButton then self.prospectButton:Hide() end
 	if self.disenchantButton then self.disenchantButton:Hide() end
+	if self.millingButton then self.millingButton:Hide() end
 end
 
 function Frame:CloseBankFrame()
@@ -471,6 +478,9 @@ function Frame:Layout()
 	local w, h = self:PlaceProspectButton()
 	width = width + w
 
+	local w, h = self:PlaceMillingButton()
+	width = width + w
+
 	local w, h = self:PlaceTitleFrame()
 	width = width + w
 
@@ -606,7 +616,9 @@ function Frame:PlaceSearchFrame()
 		frame:SetPoint('TOPLEFT', self, 'TOPLEFT', 8, -8)
 	end
 
-	if self:HasProspectButton() then
+	if self:HasMillingButton() then
+		frame:SetPoint('RIGHT', self:GetMillingButton(), 'LEFT', -2, 0)
+	elseif self:HasProspectButton() then
 		frame:SetPoint('RIGHT', self:GetProspectButton(), 'LEFT', -2, 0)
 	elseif self:HasDisenchantButton() then
 		frame:SetPoint('RIGHT', self:GetDisenchantButton(), 'LEFT', -2, 0)
@@ -738,7 +750,9 @@ function Frame:PlaceTitleFrame()
 		h = 20
 	end
 
-	if self:HasProspectButton() then
+	if self:HasMillingButton() then
+		frame:SetPoint('RIGHT', self:GetMillingButton(), 'LEFT', -4, 0)
+	elseif self:HasProspectButton() then
 		frame:SetPoint('RIGHT', self:GetProspectButton(), 'LEFT', -4, 0)
 	elseif self:HasDisenchantButton() then
 		frame:SetPoint('RIGHT', self:GetDisenchantButton(), 'LEFT', -4, 0)
@@ -1017,6 +1031,42 @@ function Frame:PlaceProspectButton()
 	end
 
 	local b = self:GetProspectButton()
+	if b then b:Hide() end
+	return 0, 0
+end
+
+
+--[[ milling button ]]--
+
+function Frame:GetMillingButton()
+	return self.millingButton
+end
+
+function Frame:CreateMillingButton()
+	local b = Bagnon.MillingButton:New(self:GetFrameID(), self)
+	self.millingButton = b
+	return b
+end
+
+function Frame:HasMillingButton()
+	if self:GetFrameID() ~= 'inventory' then return false end
+	return Bagnon.MillingButton and Bagnon.MillingButton.PlayerKnows()
+end
+
+function Frame:PlaceMillingButton()
+	if self:HasMillingButton() then
+		local b = self:GetMillingButton() or self:CreateMillingButton()
+		local slot = 0
+		if self:HasSortToggle() then slot = slot + 1 end
+		if self:HasOptionsToggle() then slot = slot + 1 end
+		if self:HasDisenchantButton() then slot = slot + 1 end
+		if self:HasProspectButton() then slot = slot + 1 end
+		placeAtBagRight(b, self, slot)
+		b:Show()
+		return b:GetWidth() + 4, b:GetHeight()
+	end
+
+	local b = self:GetMillingButton()
 	if b then b:Hide() end
 	return 0, 0
 end

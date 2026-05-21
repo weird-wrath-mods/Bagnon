@@ -53,6 +53,7 @@ function Bagnon:PLAYER_REGEN_ENABLED()
 	if not f:IsShown() then
 		if f.prospectButton then f.prospectButton:Hide() end
 		if f.disenchantButton then f.disenchantButton:Hide() end
+		if f.millingButton then f.millingButton:Hide() end
 	end
 end
 
