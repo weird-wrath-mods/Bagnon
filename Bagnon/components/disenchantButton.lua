@@ -62,8 +62,9 @@ local function find_target()
 		for slot = 1, GetContainerNumSlots(bag) do
 			local link = GetContainerItemLink(bag, slot)
 			if link then
-				local _, _, quality, ilvl, _, _, _, _, equipLoc = GetItemInfo(link)
+				local _, _, quality, ilvl, _, itemType, _, _, equipLoc = GetItemInfo(link)
 				if quality == 2 and equipLoc and equipLoc ~= ''
+				   and (itemType == 'Weapon' or itemType == 'Armor')
 				   and not is_soulbound(bag, slot) then
 					if not best_ilvl or (ilvl and ilvl < best_ilvl) then
 						best_bag, best_slot, best_link, best_ilvl = bag, slot, link, ilvl
