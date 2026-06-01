@@ -505,6 +505,15 @@ function Frame:Layout()
 	--adjust size
 	self:SetWidth(math.max(width, 156) + padW)
 	self:SetHeight(height + padH)
+
+	-- The Place*Button calls above ran before this final SetWidth/SetHeight, so
+	-- placeAtBagRight computed against stale geometry. On first open the size is
+	-- still near-default and GetTop() lands the buttons at the frame bottom.
+	-- Re-place now that GetRight()/GetTop() reflect the final size.
+	self:PlaceDisenchantButton()
+	self:PlaceProspectButton()
+	self:PlaceMillingButton()
+
 	self:SavePosition()
 end
 
