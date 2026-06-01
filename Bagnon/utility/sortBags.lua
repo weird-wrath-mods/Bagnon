@@ -25,17 +25,21 @@ local function set(...)
 	return t
 end
 
-local function union(...)
-	local t = {}
-	for i = 1, select('#', ...) do
-		for k in pairs((select(i, ...))) do
-			t[k] = true
-		end
-	end
-	return t
-end
-
 local ITEM_TYPES = {GetAuctionItemClasses()}
+
+-- Treat any bag-family a container reports as a sortable class, EXCEPT the
+-- families that aren't real bag slots: keyring (256), soulbound equipment
+-- (2048), vanity pets (4096), currency tokens (8192), quest items (16384).
+-- Using an exclude-list (not an allow-list of known bag bits) keeps this
+-- correct for any specialty bag the client exposes, including ones not
+-- enumerated here, rather than silently dropping an unrecognised family.
+local band, bnot = bit.band, bit.bnot
+local NON_BAG_FAMILIES = 256 + 2048 + 4096 + 8192 + 16384
+
+local function SpecialtyFamily(family)
+	family = band(family or 0, bnot(NON_BAG_FAMILIES))
+	return family ~= 0 and family or nil
+end
 
 
 local MOUNTS = set(
@@ -72,44 +76,6 @@ local HERBS = set(
 	22785, 22786, 22787, 22789, 22790, 22791, 22792, 22793, 22794, 22797,
 	36901, 36903, 36904, 36905, 36906, 36907, 37921, 39969, 39970, 36908
 )
-
-local SEEDS = set(17034, 17035, 17036, 17037, 17038)
-
-local CLASSES = {
-	-- arrow
-	{
-		containers = {2101, 5439, 7278, 11362, 3573, 3605, 7371, 8217, 2662, 19319, 18714},
-		items = set(2512, 2515, 3030, 3464, 9399, 11285, 12654, 18042, 19316, 28053, 28056, 31737, 31949, 34581, 41164, 41165),
-	},
-	-- bullet
-	{
-		containers = {2102, 5441, 7279, 11363, 3574, 3604, 7372, 8218, 2663, 19320},
-		items = set(2516, 2519, 3033, 3465, 4960, 5568, 8067, 8068, 8069, 10512, 10513, 11284, 11630, 13377, 15997, 19317, 28060, 28061, 31735, 32760, 34582, 41584),
-	},
-	-- soul
-	{
-		containers = {22243, 22244, 21340, 21341, 21342},
-		items = set(6265),
-	},
-	-- ench
-	{
-		containers = {22246, 22248, 22249, 38082},
-		items = union(
-			ENCHANTING_MATERIALS,
-			set(6218, 6339, 11130, 11145, 16207, 22461, 41745)
-		),
-	},
-	-- herb
-	{
-		containers = {22250, 22251, 22252},
-		items = union(HERBS, SEEDS),
-	},
-	-- mining
-	{
-		containers = {30746, 40327},
-		items = set(),
-	},
-}
 
 local model, itemStacks, itemClasses, itemSortKeys
 local CONTAINERS
@@ -247,16 +213,8 @@ end
 
 local function ContainerClass(container)
 	if container ~= 0 and container ~= BANK_CONTAINER then
-		local name = GetBagName(container)
-		if name then
-			for class, info in ipairs(CLASSES) do
-				for _, itemID in ipairs(info.containers) do
-					if name == GetItemInfo(itemID) then
-						return class
-					end
-				end
-			end
-		end
+		local _, family = GetContainerNumFreeSlots(container)
+		return SpecialtyFamily(family)
 	end
 end
 
@@ -328,11 +286,9 @@ local function Item(container, position)
 		itemStacks[key] = stack
 		itemSortKeys[key] = sortKey
 
-		for class, info in ipairs(CLASSES) do
-			if info.items[itemID] then
-				itemClasses[key] = class
-				break
-			end
+		local family = SpecialtyFamily(GetItemFamily(itemID))
+		if family then
+			itemClasses[key] = family
 		end
 
 		return key
@@ -501,12 +457,14 @@ driver:SetScript('OnUpdate', function()
 	operationTimeout = GetTime() + 2
 end)
 
-function SB:SortInventory()
+function SB:SortInventory(reverse)
+	SortBagsRightToLeft = reverse and true or nil
 	CONTAINERS = {0, 1, 2, 3, 4}
 	Start()
 end
 
-function SB:SortBank()
+function SB:SortBank(reverse)
+	SortBagsRightToLeft = reverse and true or nil
 	-- WotLK: bank container -1, bank bags 5-11 (NUM_BANKBAGSLOTS = 7)
 	CONTAINERS = {-1, 5, 6, 7, 8, 9, 10, 11}
 	Start()
