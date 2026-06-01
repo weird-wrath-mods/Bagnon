@@ -52,14 +52,15 @@ end
 
 --[[ Frame Events ]]--
 
-function SortToggle:OnClick()
+function SortToggle:OnClick(button)
 	if not Bagnon.SortBags then return end
 	if Bagnon.SortBags:IsRunning() then return end
 
+	local reverse = button == 'RightButton'
 	if self:GetFrameID() == 'bank' then
-		Bagnon.SortBags:SortBank()
+		Bagnon.SortBags:SortBank(reverse)
 	else
-		Bagnon.SortBags:SortInventory()
+		Bagnon.SortBags:SortInventory(reverse)
 	end
 end
 
@@ -69,7 +70,10 @@ function SortToggle:OnEnter()
 	else
 		GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
 	end
-	GameTooltip:SetText(self:GetFrameID() == 'bank' and 'Sort Bank' or 'Sort Bags')
+	local isBank = self:GetFrameID() == 'bank'
+	GameTooltip:SetText(isBank and 'Sort Bank' or 'Sort Bags')
+	GameTooltip:AddLine('Left-click: sort forwards.', 1, 1, 1, true)
+	GameTooltip:AddLine('Right-click: sort backwards (reverse slot fill + order).', 1, 1, 1, true)
 	GameTooltip:Show()
 end
 
