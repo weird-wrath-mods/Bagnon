@@ -58,6 +58,10 @@ local SPECIAL = set(5462, 17696, 17117, 13347, 13289, 11511)
 local KEYS = set(9240, 17191, 13544, 12324, 16309, 12384, 20402)
 local TOOLS = set(7005, 12709, 19727, 5956, 2901, 6219, 10498, 6218, 6339, 11130, 11145, 16207, 9149, 15846, 6256, 6365, 6367)
 
+-- Engineer teleport toys Blizzard tagged as Armor/Misc instead of Trade Goods/Devices,
+-- so they miss the subType == 'Devices' bucket and scatter into generic gear.
+local GADGETS = set(18984, 18986, 30542, 30544, 48933)
+
 local ENCHANTING_MATERIALS = set(
 	10940, 11083, 11137, 11176, 16204,
 	10938, 10939, 10998, 11082, 11134, 11135, 11174, 11175, 16202, 16203,
@@ -231,7 +235,7 @@ local function Item(container, position)
 		local sortKey = {}
 		if itemID == 6948 then
 			tinsert(sortKey, 1)
-		elseif subType == 'Devices' then
+		elseif subType == 'Devices' or GADGETS[itemID] then
 			tinsert(sortKey, 2)
 		elseif MOUNTS[itemID] then
 			tinsert(sortKey, 3)
