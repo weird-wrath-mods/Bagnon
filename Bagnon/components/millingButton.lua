@@ -58,16 +58,18 @@ local HERBS = {
 	[22791] = 7,  -- Netherbloom
 	[22792] = 7,  -- Nightmare Vine
 	[22793] = 7,  -- Mana Thistle
-	-- Tier 8 (Azure/Icy Pigment)
-	[36901] = 8,  -- Goldclover
-	[36903] = 8,  -- Adder's Tongue
-	[36904] = 8,  -- Tiger Lily
-	[36905] = 8,  -- Lichbloom
-	[36906] = 8,  -- Icethorn
-	[36907] = 8,  -- Talandra's Rose
-	[37921] = 8,  -- Deadnettle
-	[39970] = 8,  -- Firethorn
-	[36908] = 8,  -- Frost Lotus
+	-- Tier 8+ (Azure/Icy Pigment). Northrend herbs split by Icy Pigment yield
+	-- per mill (see Alchemizer/AlchemizerMill.lua) so the low-icy herbs go first
+	-- and the high-icy ones are preserved: 0.5 -> 8, 1.0 -> 9, 1.25 -> 10.
+	[36901] = 8,  -- Goldclover (icy 0.5)
+	[36904] = 8,  -- Tiger Lily (icy 0.5)
+	[36907] = 8,  -- Talandra's Rose (icy 0.5)
+	[37921] = 8,  -- Deadnettle (icy 0.5)
+	[39969] = 8,  -- Fire Seed (icy 0.5)
+	[39970] = 8,  -- Fire Leaf (icy 0.5)
+	[36905] = 9,  -- Lichbloom (icy 1.0)
+	[36906] = 9,  -- Icethorn (icy 1.0)
+	[36903] = 10, -- Adder's Tongue (icy 1.25, highest)
 }
 
 -- Cached spellbook scan for the Milling spell. Invalidated whenever the
